@@ -50,18 +50,19 @@ def one(seed: int):
     ], r.extinct
 
 
-def main():
+def main(seeds=SEEDS, tag: str = ""):
+    seeds = list(seeds)
     with ProcessPoolExecutor() as pool:
-        outs = list(pool.map(one, SEEDS))
+        outs = list(pool.map(one, seeds))
     rows = [row for rs, _ in outs for row in rs]
-    write_csv(rows, "e4_climate_history")
+    write_csv(rows, f"e4_climate_history{tag}")
 
     years = np.arange(2 * HALF)
     med = np.array([[r["median_mass"] for r in rs] for rs, _ in outs])
     p95 = np.array([[r["p95_mass"] for r in rs] for rs, _ in outs])
 
     fig, ax = plt.subplots(figsize=(10, 4.4))
-    ax.plot(years, np.exp(np.log(med).mean(0)), color="#1f6feb", label="median mass (geo-mean of 3 seeds)")
+    ax.plot(years, np.exp(np.log(med).mean(0)), color="#1f6feb", label=f"median mass (geo-mean of {len(seeds)} seeds)")
     ax.plot(years, np.exp(np.log(p95).mean(0)), color="#f78166", label="95th percentile mass")
     ax.set_yscale("log")
     ax.set_xlabel("Simulated year")
@@ -74,7 +75,7 @@ def main():
     ax.set_title("E4 · cooling + seasonality (years 0–400), then the reverse (400–800)")
     fig.tight_layout()
     FIGURES.mkdir(parents=True, exist_ok=True)
-    fig.savefig(FIGURES / "fig3_climate_history.png", dpi=150)
+    fig.savefig(FIGURES / f"fig3_climate_history{tag}.png", dpi=150)
 
     gm = np.exp(np.log(med).mean(0))
     print(f"E4 median mass: start={gm[:20].mean():.2f} kg, peak(cold, yrs 380-420)={gm[380:420].mean():.2f} kg, "

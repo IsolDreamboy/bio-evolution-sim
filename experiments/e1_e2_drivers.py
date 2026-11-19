@@ -20,15 +20,15 @@ E2_TEMP = 15.0
 SWING_PER_AMP = 10.0  # a seasonality of 0.9 also means a +/-9 C winter-summer swing
 
 
-def e1_jobs():
-    return [Job("E1", float(t), 0.0, 0.0, FOOD, s) for t in TEMPS for s in SEEDS]
+def e1_jobs(seeds=SEEDS):
+    return [Job("E1", float(t), 0.0, 0.0, FOOD, s) for t in TEMPS for s in seeds]
 
 
-def e2_jobs():
+def e2_jobs(seeds=SEEDS):
     return [
         Job("E2", E2_TEMP, float(a), float(a * SWING_PER_AMP), FOOD, s)
         for a in SEASONS
-        for s in SEEDS
+        for s in seeds
     ]
 
 
@@ -49,11 +49,13 @@ def plot(ax, rows, key, xlabel, title):
     ax.grid(alpha=0.3, which="both")
 
 
-def main():
-    rows1 = run_many(e1_jobs())
-    rows2 = run_many(e2_jobs())
-    write_csv(rows1, "e1_temperature")
-    write_csv(rows2, "e2_seasonality")
+def main(seeds=SEEDS, tag: str = ""):
+    """tag="" writes the paper outputs; any other tag writes separate validation files."""
+    seeds = list(seeds)
+    rows1 = run_many(e1_jobs(seeds))
+    rows2 = run_many(e2_jobs(seeds))
+    write_csv(rows1, f"e1_temperature{tag}")
+    write_csv(rows2, f"e2_seasonality{tag}")
 
     rho1, p1 = spearman(rows1, "temp_c")
     rho2, p2 = spearman(rows2, "seasonality")
@@ -64,9 +66,9 @@ def main():
          f"E1 · temperature only (ρ = {rho1:.2f})")
     plot(axes[1], rows2, "seasonality", "Seasonality amplitude (food & temperature)",
          f"E2 · seasonality only at {E2_TEMP:.0f} °C (ρ = {rho2:.2f})")
-    fig.suptitle("Body size evolves with climate — no climate rule in the code (5 seeds, mean ± sd)")
+    fig.suptitle(f"Body size evolves with climate — no climate rule in the code ({len(seeds)} seeds, mean ± sd)")
     fig.tight_layout()
-    fig.savefig(FIGURES / "fig1_drivers.png", dpi=150)
+    fig.savefig(FIGURES / f"fig1_drivers{tag}.png", dpi=150)
 
     print(f"E1 temperature: Spearman rho={rho1:.3f} p={p1:.2g}; extinct runs={sum(r['extinct'] for r in rows1)}")
     print(f"E2 seasonality: Spearman rho={rho2:.3f} p={p2:.2g}; extinct runs={sum(r['extinct'] for r in rows2)}")

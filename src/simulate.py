@@ -16,7 +16,7 @@ from src.engine import (
     EnvironmentConfig,
     PhysicsParams,
     intake_capacity,
-    step_bioenergetics, 
+    step_bioenergetics,
 )
 from src.speciation import mutate_traits
 from src.world import FoodGrid

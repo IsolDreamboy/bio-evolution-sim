@@ -64,6 +64,17 @@ Insulation evolves alongside mass: it reaches ~1.0 below 15 °C and ~0.01 above 
 
 **E4** — median mass goes from 2.0 kg to ~46 kg at the coldest point, but **does not return** during the warming phase (~57 kg at the end).
 
+**Out-of-sample validation.** All development used seeds 0–4. Re-running on seeds never seen before (`--seed-start 100 --num-seeds 20`, n = 20 per condition):
+
+| | Paper seeds (n = 5) | Seeds 100–119 (n = 20) |
+|---|---|---|
+| E1 ρ (temperature) | −0.930 | −0.943 (p ≈ 10⁻¹¹⁶) |
+| E2 ρ (seasonality) | +0.839 | +0.842 (p ≈ 10⁻⁵⁵) |
+| E1 mass at 0 / 15 / 33 °C | 18.0 / 8.0 / 2.6 kg | 16.6 / 8.0 / 2.5 kg |
+| E4 (seeds 100–104) | 2.0 → 46 → 57 kg | 2.0 → 50 → 63 kg |
+
+The E4 hysteresis appears in **all 8 seeds** tested: mass at the end of the warming phase is never below its cold-period peak. It is a structural property of the model, not a seed artefact. In warm climates, the only term that depends on size is locomotion cost (~M^0.70 against intake ~M^0.75), which slightly favours larger bodies. Heat stress penalises all sizes almost equally (see Limitations). A `slow` pytest (`tests/test_invariance.py`) checks the E1 result on unseen seeds 100–102.
+
 ## 4. Limitations
 
 - **Warmth is not a counter-force.** In this model, heat stress grows roughly like metabolism (~M^0.75), so it penalises every body size about equally. Large founders kept at 25–35 °C do not shrink. The small sizes seen in warm runs of E1 are therefore "no reason to grow", not "selected to be small". A real heat-dissipation limit is the top v2 item.
@@ -77,7 +88,7 @@ Insulation evolves alongside mass: it reaches ~1.0 below 15 °C and ~0.01 above 
 
 ```bash
 pip install -r requirements.txt
-pytest -q                          # 10 tests
+pytest -q                          # 11 tests (~30 s; add -m "not slow" to skip the out-of-sample check)
 python -m experiments.run_all      # all CSVs in results/ and figures in docs/figures/ (~10 min, 2 cores)
 ```
 
